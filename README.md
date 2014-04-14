@@ -1,4 +1,4 @@
 qplay.tv
 ========
 
-The Secure Remote Queue Service for Your qplay Media Player Device
+The Secure Remote Queue Service for Your qplay Media Player Platform
