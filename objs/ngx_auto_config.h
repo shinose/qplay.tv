@@ -30,19 +30,20 @@
 #endif
 
 
+#ifndef NGX_HAVE_EPOLLRDHUP
+#define NGX_HAVE_EPOLLRDHUP  1
+#endif
+
+
 #ifndef NGX_HAVE_SENDFILE
 #define NGX_HAVE_SENDFILE  1
 #endif
 
-#ifndef NGX_SENDFILE_LIMIT
-#define NGX_SENDFILE_LIMIT  0x80000000
-#endif
 
-#if 0
 #ifndef NGX_HAVE_SENDFILE64
 #define NGX_HAVE_SENDFILE64  1
 #endif
-#endif
+
 
 #ifndef NGX_HAVE_PR_SET_DUMPABLE
 #define NGX_HAVE_PR_SET_DUMPABLE  1

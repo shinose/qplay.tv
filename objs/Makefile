@@ -44,6 +44,7 @@ CORE_DEPS = src/core/nginx.h \
 	src/core/ngx_resolver.h \
 	src/core/ngx_open_file_cache.h \
 	src/core/ngx_crypt.h \
+	src/core/ngx_proxy_protocol.h \
 	src/event/ngx_event.h \
 	src/event/ngx_event_timer.h \
 	src/event/ngx_event_posted.h \
@@ -127,6 +128,7 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/core/ngx_resolver.o \
 	objs/src/core/ngx_open_file_cache.o \
 	objs/src/core/ngx_crypt.o \
+	objs/src/core/ngx_proxy_protocol.o \
 	objs/src/event/ngx_event.o \
 	objs/src/event/ngx_event_timer.o \
 	objs/src/event/ngx_event_posted.o \
@@ -208,7 +210,7 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/http/modules/ngx_http_upstream_ip_hash_module.o \
 	objs/src/http/modules/ngx_http_upstream_least_conn_module.o \
 	objs/src/http/modules/ngx_http_upstream_keepalive_module.o \
-	objs/src/http/modules/ngx_http_qplayip_module.o \
+	objs/src/http/modules/ngx_http_qplay_module.o \
 	objs/ngx_modules.o
 
 	$(LINK) -o objs/nginx \
@@ -241,6 +243,7 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/core/ngx_resolver.o \
 	objs/src/core/ngx_open_file_cache.o \
 	objs/src/core/ngx_crypt.o \
+	objs/src/core/ngx_proxy_protocol.o \
 	objs/src/event/ngx_event.o \
 	objs/src/event/ngx_event_timer.o \
 	objs/src/event/ngx_event_posted.o \
@@ -322,7 +325,7 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/src/http/modules/ngx_http_upstream_ip_hash_module.o \
 	objs/src/http/modules/ngx_http_upstream_least_conn_module.o \
 	objs/src/http/modules/ngx_http_upstream_keepalive_module.o \
-	objs/src/http/modules/ngx_http_qplayip_module.o \
+	objs/src/http/modules/ngx_http_qplay_module.o \
 	objs/ngx_modules.o \
 	-lpthread -lcrypt -lpcre -lssl -lcrypto -ldl -lz
 	
@@ -536,6 +539,13 @@ objs/src/core/ngx_crypt.o:	$(CORE_DEPS) \
 	$(CC) -c $(CFLAGS) $(CORE_INCS) \
 		-o objs/src/core/ngx_crypt.o \
 		src/core/ngx_crypt.c
+
+
+objs/src/core/ngx_proxy_protocol.o:	$(CORE_DEPS) \
+	src/core/ngx_proxy_protocol.c
+	$(CC) -c $(CFLAGS) $(CORE_INCS) \
+		-o objs/src/core/ngx_proxy_protocol.o \
+		src/core/ngx_proxy_protocol.c
 
 
 objs/src/event/ngx_event.o:	$(CORE_DEPS) \
@@ -1104,57 +1114,47 @@ objs/src/http/modules/ngx_http_upstream_keepalive_module.o:	$(CORE_DEPS) $(HTTP_
 		-o objs/src/http/modules/ngx_http_upstream_keepalive_module.o \
 		src/http/modules/ngx_http_upstream_keepalive_module.c
 
-objs/src/http/modules/ngx_http_qplayip_module.o:	$(CORE_DEPS) $(HTTP_DEPS) \
-	src/http/modules/ngx_http_qplayip_module.c
+objs/src/http/modules/ngx_http_qplay_module.o:	$(CORE_DEPS) $(HTTP_DEPS) \
+	src/http/modules/ngx_http_qplay_module.c
 	$(CC) -c $(CFLAGS) $(CORE_INCS) $(HTTP_INCS) \
-		-o objs/src/http/modules/ngx_http_qplayip_module.o \
-		src/http/modules/ngx_http_qplayip_module.c
-
-
-manpage:	objs/nginx.8
-
-objs/nginx.8:	man/nginx.8 objs/ngx_auto_config.h
-	sed -e "s|%%PREFIX%%|/home/qplay/nginx/|" \
-		-e "s|%%PID_PATH%%|/home/qplay/nginx/logs/nginx.pid|" \
-		-e "s|%%CONF_PATH%%|/home/qplay/nginx/conf/nginx.conf|" \
-		-e "s|%%ERROR_LOG_PATH%%|/home/qplay/nginx/logs/error.log|" \
-		< man/nginx.8 > $@
+		-o objs/src/http/modules/ngx_http_qplay_module.o \
+		src/http/modules/ngx_http_qplay_module.c
 
 install:	objs/nginx 		
-	test -d '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD' || mkdir -p '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD'
+	test -d 'BUILD' || mkdir -p 'BUILD'
 
-	test -d '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/sbin' 		|| mkdir -p '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/sbin'
-	test ! -f '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/sbin/nginx' 		|| mv '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/sbin/nginx' 			'$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/sbin/nginx.old'
-	cp objs/nginx '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/sbin/nginx'
+	test -d 'BUILD/sbin' 		|| mkdir -p 'BUILD/sbin'
+	test ! -f 'BUILD/sbin/nginx' 		|| mv 'BUILD/sbin/nginx' 			'BUILD/sbin/nginx.old'
+	cp objs/nginx 'BUILD/sbin/nginx'
 
-	test -d '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf' 		|| mkdir -p '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf'
+	test -d 'BUILD/conf' 		|| mkdir -p 'BUILD/conf'
 
-	cp conf/koi-win '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf'
-	cp conf/koi-utf '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf'
-	cp conf/win-utf '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf'
+	cp conf/koi-win 'BUILD/conf'
+	cp conf/koi-utf 'BUILD/conf'
+	cp conf/win-utf 'BUILD/conf'
 
-	test -f '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/mime.types' 		|| cp conf/mime.types '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf'
-	cp conf/mime.types '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/mime.types.default'
+	test -f 'BUILD/conf/mime.types' 		|| cp conf/mime.types 'BUILD/conf'
+	cp conf/mime.types 'BUILD/conf/mime.types.default'
 
-	test -f '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/fastcgi_params' 		|| cp conf/fastcgi_params '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf'
-	cp conf/fastcgi_params 		'$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/fastcgi_params.default'
+	test -f 'BUILD/conf/fastcgi_params' 		|| cp conf/fastcgi_params 'BUILD/conf'
+	cp conf/fastcgi_params 		'BUILD/conf/fastcgi_params.default'
 
-	test -f '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/fastcgi.conf' 		|| cp conf/fastcgi.conf '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf'
-	cp conf/fastcgi.conf '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/fastcgi.conf.default'
+	test -f 'BUILD/conf/fastcgi.conf' 		|| cp conf/fastcgi.conf 'BUILD/conf'
+	cp conf/fastcgi.conf 'BUILD/conf/fastcgi.conf.default'
 
-	test -f '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/uwsgi_params' 		|| cp conf/uwsgi_params '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf'
-	cp conf/uwsgi_params 		'$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/uwsgi_params.default'
+	test -f 'BUILD/conf/uwsgi_params' 		|| cp conf/uwsgi_params 'BUILD/conf'
+	cp conf/uwsgi_params 		'BUILD/conf/uwsgi_params.default'
 
-	test -f '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/scgi_params' 		|| cp conf/scgi_params '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf'
-	cp conf/scgi_params 		'$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/scgi_params.default'
+	test -f 'BUILD/conf/scgi_params' 		|| cp conf/scgi_params 'BUILD/conf'
+	cp conf/scgi_params 		'BUILD/conf/scgi_params.default'
 
-	test -f '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/nginx.conf' 		|| cp conf/nginx.conf '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/nginx.conf'
-	cp conf/nginx.conf '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/conf/nginx.conf.default'
+	test -f 'BUILD/conf/nginx.conf' 		|| cp conf/nginx.conf 'BUILD/conf/nginx.conf'
+	cp conf/nginx.conf 'BUILD/conf/nginx.conf.default'
 
-	test -d '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/logs' 		|| mkdir -p '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/logs'
+	test -d 'BUILD/logs' 		|| mkdir -p 'BUILD/logs'
 
-	test -d '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/logs' || 		mkdir -p '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/logs'
+	test -d 'BUILD/logs' || 		mkdir -p 'BUILD/logs'
 
-	test -d '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/html' 		|| cp -R html '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD'
+	test -d 'BUILD/html' 		|| cp -R html 'BUILD'
 
-	test -d '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/logs' || 		mkdir -p '$(DESTDIR)/home/shinose/buildroot/qplay/repo/nginx-1.4.7/BUILD/logs'
+	test -d 'BUILD/logs' || 		mkdir -p 'BUILD/logs'
