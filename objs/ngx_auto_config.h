@@ -1,4 +1,4 @@
-#define NGX_CONFIGURE " --prefix=/home/shinose/buildroot/qplay/staging/nginx-1.4.7/BUILD --with-pcre --with-http_ssl_module"
+#define NGX_CONFIGURE "--with-pcre --with-http_ssl_module"
 
 #ifndef NGX_COMPILER
 #define NGX_COMPILER  "gcc 4.8.2 (Buildroot 2014.02-git-00804-ge7d309c)"
