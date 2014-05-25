@@ -61,7 +61,6 @@ CORE_DEPS = src/core/nginx.h \
 	src/os/unix/ngx_setaffinity.h \
 	src/os/unix/ngx_setproctitle.h \
 	src/os/unix/ngx_atomic.h \
-#	src/os/unix/ngx_gcc_atomic_x86.h \
 	src/os/unix/ngx_thread.h \
 	src/os/unix/ngx_socket.h \
 	src/os/unix/ngx_os.h \
